@@ -1,0 +1,290 @@
+CREATE DATABASE ColegioInscripciones;
+USE ColegioInscripciones;
+
+CREATE TABLE grados (
+    id_grado INT PRIMARY KEY AUTO_INCREMENT,
+    nombre_grado VARCHAR(50) NOT NULL,
+    cupos_disponibles INT
+);
+
+CREATE TABLE ubicacion (
+    id_ubicacion INT PRIMARY KEY AUTO_INCREMENT,
+    municipio VARCHAR(50),
+    calle VARCHAR(50),
+    avenida VARCHAR(50),
+    num_casa VARCHAR(50)
+);
+
+CREATE TABLE representantes (
+    id_representante INT PRIMARY KEY AUTO_INCREMENT,
+    cedula VARCHAR(20) UNIQUE NOT NULL,
+    nombre_completo VARCHAR(150) NOT NULL,
+    parentesco VARCHAR(50),
+    telefono_principal VARCHAR(20) NOT NULL,
+    correo VARCHAR(100),
+    id_ubicacion INT,
+    FOREIGN KEY (id_ubicacion) REFERENCES ubicacion(id_ubicacion)
+);
+
+CREATE TABLE estudiantes (
+    id_estudiante INT PRIMARY KEY AUTO_INCREMENT,
+    id_representante INT,
+    nombres VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(100) NOT NULL,
+    fecha_nacimiento VARCHAR(50),
+    alergias_condiciones TEXT,
+    FOREIGN KEY (id_representante) REFERENCES Representantes(id_representante)
+);
+
+CREATE TABLE cargo (
+    id_cargo INT PRIMARY KEY AUTO_INCREMENT,
+    nombre_cargo VARCHAR(50)
+);
+
+CREATE TABLE docente (
+    id_docente INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(50),
+    cedula VARCHAR(50),
+    titulo VARCHAR(50),
+    id_cargo INT,
+    FOREIGN KEY (id_cargo) REFERENCES cargo(id_cargo)
+);
+
+CREATE TABLE preinscripciones (
+    id_preinscripcion INT PRIMARY KEY AUTO_INCREMENT,
+    id_estudiante INT,
+    id_grado_solicitado INT,
+    fecha_solicitud VARCHAR(50),
+    estatus VARCHAR(50),
+    promedio_anterior DECIMAL(4,2),
+    FOREIGN KEY (id_estudiante) REFERENCES Estudiantes(id_estudiante),
+    FOREIGN KEY (id_grado_solicitado) REFERENCES Grados(id_grado)
+);
+
+CREATE TABLE r_r_p (
+    id_r_r_p INT PRIMARY KEY AUTO_INCREMENT,
+    id_representante INT,
+    id_preinscripcion INT,
+    FOREIGN KEY (id_representante) REFERENCES representantes(id_representante),
+    FOREIGN KEY (id_preinscripcion) REFERENCES preinscripciones(id_preinscripcion)
+);
+
+CREATE TABLE entrevistas (
+    id_entrevista INT PRIMARY KEY AUTO_INCREMENT,
+    fecha VARCHAR(50),
+    entrevistador VARCHAR(100),
+    id_docente INT,
+    id_representante_inscripcion INT,
+    resultado VARCHAR(50),
+    FOREIGN KEY (id_docente) REFERENCES docente(id_docente),
+    FOREIGN KEY (id_representante_inscripcion) REFERENCES r_r_p(id_r_r_p)
+);
+
+CREATE TABLE direccion (
+    id_direccion INT AUTO_INCREMENT PRIMARY KEY,
+    calle VARCHAR(50),
+    avenida VARCHAR(50)
+);
+
+CREATE TABLE usuarios (
+    id_usuarios INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50),
+    id_direccion INT,
+    FOREIGN KEY (id_direccion) REFERENCES direccion(id_direccion)
+);
+
+CREATE TABLE rol (
+    id_rol INT AUTO_INCREMENT PRIMARY KEY,
+    cargo VARCHAR(50)
+);
+
+CREATE TABLE r_u_r (
+    id_r_u_r INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuarios INT,
+    id_rol INT,
+    FOREIGN KEY (id_usuarios) REFERENCES usuarios(id_usuarios),
+    FOREIGN KEY (id_rol) REFERENCES rol(id_rol)
+);
+
+
+CREATE TABLE modulo (
+    id_modulo INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_modulo VARCHAR(50),
+    codigo_interno VARCHAR(50),
+    orden INT
+);
+
+CREATE TABLE paginas (
+    id_paginas INT AUTO_INCREMENT PRIMARY KEY,
+    url VARCHAR(50),
+    nombre_pagina VARCHAR(50)
+);
+
+CREATE TABLE r_m_p (
+    id_r_m_p INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario_rol INT,
+    id_modulo INT,
+    id_paginas INT,
+    FOREIGN KEY (id_modulo) REFERENCES modulo(id_modulo),
+    FOREIGN KEY (id_paginas) REFERENCES paginas(id_paginas),
+    FOREIGN KEY (id_usuario_rol) REFERENCES r_u_r(id_r_u_r)
+);
+
+CREATE TABLE permisos (
+    id_permisos INT AUTO_INCREMENT PRIMARY KEY,
+    accion VARCHAR(50)
+);
+
+CREATE TABLE r_mp_per (
+    id_r_mp_per INT AUTO_INCREMENT PRIMARY KEY,
+    id_permisos INT,
+    id_modulo_pagina INT,
+    FOREIGN KEY (id_permisos) REFERENCES permisos(id_permisos),
+    FOREIGN KEY (id_modulo_pagina) REFERENCES r_m_p(id_r_m_p)
+);
+
+
+
+
+
+
+
+
+
+
+
+
+INSERT INTO grados (nombre_grado, cupos_disponibles) VALUES 
+('1er Grado', 30), 
+('2do Grado', 25), 
+('3er Grado', 20), 
+('4to Grado', 15), 
+('5to Grado', 10);
+
+
+INSERT INTO ubicacion (municipio, calle, avenida, num_casa) VALUES 
+('Maracaibo', 'Calle 72', 'Av. 15', '51-777'), 
+('San Francisco', 'Calle 70', 'Av. 5', '21-333'), 
+('Maracaibo', 'Calle 74', 'Av. 168', '01-03'), 
+('Maracaibo', 'Calle 15', 'Av. 124', '145-95'),
+('San Francisco', 'Calle 87', 'Av. 148', '124-85');
+
+
+INSERT INTO cargo (nombre_cargo) VALUES 
+('Director'), 
+('Coordinador'), 
+('Docente de Aula'), 
+('Administrador'),
+('Secretario');
+
+INSERT INTO direccion (calle, avenida) VALUES 
+('Calle 1', 'Av. A'),
+('Calle 2', 'Av. B'),
+('Calle 3', 'Av. C'), 
+('Calle 4', 'Av. D'),
+('Calle 5', 'Av. E');
+
+
+INSERT INTO rol (cargo) VALUES 
+('Administrador'),
+ ('Editor'),
+('Visualizador'), 
+('Auditor'),
+('Superusuario');
+
+
+INSERT INTO modulo (nombre_modulo, codigo_interno, orden) VALUES 
+('Inscripciones', 'MOD-01', 1),
+('RRHH', 'MOD-02', 2),
+('Finanzas', 'MOD-03', 3), 
+('Reportes', 'MOD-04', 4), 
+('Seguridad', 'MOD-05', 5);
+
+
+INSERT INTO paginas (url, nombre_pagina) VALUES 
+('/registro', 'Registro Estudiante'),
+('/nomina', 'Gestión Nómina'),
+('/pagos', 'Control Pagos'), 
+('/graficas', 'Estadísticas'), 
+('/usuarios', 'Gestión Usuarios');
+
+
+INSERT INTO permisos (accion) VALUES 
+('Crear'), 
+('Leer'),
+('Actualizar'),
+('Eliminar');
+
+INSERT INTO representantes (cedula, nombre_completo, parentesco, telefono_principal, correo, id_ubicacion) VALUES 
+('10789987', 'Juan Perez', 'Padre', '0414-111', 'juan@mail.com', 1),
+('20678432', 'Maria Lopez', 'Madre', '0424-222', 'maria@mail.com', 2),
+('15673899', 'Luis Gomez', 'Abuelo', '0412-333', 'luis@mail.com', 3),
+('22748930','Ana Silva', 'Madre', '0416-444', 'ana@mail.com', 4),
+('17894757','Pedro Ruiz', 'Tío', '0414-555', 'pedro@mail.com', 5);
+
+
+INSERT INTO docente (nombre, cedula, titulo, id_cargo) VALUES 
+('Carlos Diaz', '15689238', 'Lic. Educación', 1), 
+('Elena Mora', '23748908', 'Magister', 2), 
+('Jose Cana', '19798435', 'Licenciado', 3), 
+('Rosa Lind', '23098764', 'Doctorado', 4), 
+('Luis Paz', '26987456', 'Licenciado', 5);
+
+
+INSERT INTO usuarios (nombre, id_direccion) VALUES 
+('Admin1', 1), 
+('User2', 2), 
+('User3', 3),
+('User4', 4), 
+('User5', 5);
+
+INSERT INTO estudiantes (id_representante, nombres, apellidos, fecha_nacimiento, alergias_condiciones) VALUES 
+(1, 'Carlitos', 'Perez', '2015-05-10', 'Ninguna'),
+(2, 'Mariita', 'Lopez', '2016-06-15', 'Asma'),
+(3, 'Luisito', 'Gomez', '2017-07-20', 'Alergico al polvo'),
+(4, 'Anita', 'Silva', '2014-08-25', 'Ninguna'),
+(5, 'Pedrito', 'Ruiz', '2013-09-30', 'Alérgico al maní');
+
+
+INSERT INTO preinscripciones (id_estudiante, id_grado_solicitado, fecha_solicitud, estatus, promedio_anterior) VALUES 
+(1, 1, '2026-04-01', 'Pendiente', 18.50),
+(2, 2, '2026-04-02', 'Aprobado', 19.00), 
+(3, 3, '2026-04-03', 'Rechazado', 10.00), 
+(4, 4, '2026-04-04', 'Pendiente', 15.00), 
+(5, 5, '2026-04-05', 'Aprobado', 17.50);
+
+INSERT INTO r_r_p (id_representante, id_preinscripcion) VALUES 
+(1, 1),
+(2, 2),
+(3, 3), 
+(4, 4), 
+(5, 5);
+
+INSERT INTO entrevistas (fecha, entrevistador, id_docente, id_representante_inscripcion, resultado) VALUES 
+('2026-05-01', 'Carlos Diaz', 1, 1, 'Exitoso'),
+('2026-05-02', 'Elena Mora', 2, 2, 'Exitoso'),
+('2026-05-03', 'Jose Cana', 3, 3, 'No Admitido'),
+('2026-05-04', 'Rosa Lind', 4, 4, 'Pendiente'),
+('2026-05-05', 'Luis Paz', 5, 5, 'Exitoso');
+
+INSERT INTO r_u_r (id_usuarios, id_rol) VALUES 
+(1, 1), 
+(2, 2), 
+(3, 3), 
+(4, 4), 
+(5, 5);
+
+INSERT INTO r_m_p (id_usuario_rol, id_modulo, id_paginas) VALUES 
+(1, 1, 1), 
+(2, 2, 2),
+(3, 3, 3), 
+(4, 4, 4), 
+(5, 5, 5);
+
+
+INSERT INTO r_mp_per (id_permisos, id_modulo_pagina) VALUES 
+(1, 1), 
+(2, 2), 
+(3, 3), 
+(4, 4), 
+(3, 3);
